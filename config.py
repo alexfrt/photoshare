@@ -9,3 +9,4 @@ class Config(object):
     DATABASE_USER = os.environ.get("DATABASE_USER", "photoshare")
     DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD", "photoshare")
     DATABASE_URI = "postgresql://%s:%s@%s/%s" % (DATABASE_USER, DATABASE_PASSWORD, DATABASE_HOST, DATABASE_NAME)
+    LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
