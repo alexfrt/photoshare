@@ -1,12 +1,12 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+
+from config import Config
 
 app = Flask(__name__)
 
+app.register_blueprint(login_api)
+app.config['SQLALCHEMY_DATABASE_URI'] = Config.DATABASE_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
-
-
-if __name__ == '__main__':
-    app.run()
+db = SQLAlchemy(app)
