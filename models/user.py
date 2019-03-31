@@ -3,10 +3,10 @@ from app import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-    nick = db.Column(db.String(50), unique=True)
-    password = db.Column(db.String(40))
-    email = db.Column(db.String(100), unique=True)
+    name = db.Column(db.String(255), nullable=False)
+    nick = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(40), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
 
     def __repr__(self):
         return "<User(id='%s' nick='%s')>" % (self.id, self.nick)
