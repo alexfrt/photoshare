@@ -7,4 +7,4 @@ RUN pip3 install -r requirements.txt
 
 EXPOSE 5000/tcp
 
-ENTRYPOINT python app.py
+ENTRYPOINT ./manage.py runserver --host 0.0.0.0
