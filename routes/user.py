@@ -24,6 +24,7 @@ def login():
                 session['user'] = user.nick
 
                 logger.info("user {} has logged in".format(user.nick))
+                return redirect(url_for('root'))
             except InvalidCredentialsException as e:
                 error = str(e)
 
