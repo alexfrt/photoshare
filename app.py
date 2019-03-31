@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 
 from config import Config
@@ -8,6 +8,7 @@ config_logger()
 
 app = Flask(__name__)
 
+app.secret_key = Config.SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = Config.DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -21,4 +22,7 @@ app.register_blueprint(user_api)
 
 @app.route("/")
 def root():
-    return redirect(url_for('user_api.login'))
+    if 'user' in session:
+        return "OLA MUNDO!"
+    else:
+        return redirect(url_for('user_api.login'))

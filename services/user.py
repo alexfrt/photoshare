@@ -1,6 +1,17 @@
 import hashlib
 
+from app import db
 from models.user import User
+
+
+def create_user(user):
+    salted_password = salt_user_password(user)
+    user.password = salted_password
+
+    db.session.add(user)
+    db.session.commit()
+
+    return user
 
 
 def check_user_credentials(nick, password):
@@ -15,7 +26,7 @@ def check_user_credentials(nick, password):
 def salt_user_password(user, password=None):
     if password is None:
         password = user.password
-    return hashlib.sha1("{}--{}".format(password, user.nick))
+    return hashlib.sha1("{}--{}".format(password, user.nick).encode("UTF-8")).hexdigest()
 
 
 class InvalidCredentialsException(Exception):
