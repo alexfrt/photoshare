@@ -21,4 +21,4 @@ app.register_blueprint(user_api)
 
 @app.route("/")
 def root():
-    return redirect(url_for('login_api.login'))
+    return redirect(url_for('user_api.login'))

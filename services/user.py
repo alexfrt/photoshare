@@ -7,7 +7,7 @@ def check_user_credentials(nick, password):
     user = User.query.filter_by(nick=nick).first()
 
     if user is None or salt_user_password(user, password) != user.password:
-        raise InvalidCredentialsException("invalid credentials")
+        raise InvalidCredentialsException("Invalid Credentials")
 
     return user
 
