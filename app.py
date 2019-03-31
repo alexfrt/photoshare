@@ -14,9 +14,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 from models import *
-from routes.login import login_api
+from routes.user import user_api
 
-app.register_blueprint(login_api)
+app.register_blueprint(user_api)
 
 
 @app.route("/")

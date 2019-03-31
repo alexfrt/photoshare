@@ -2,13 +2,13 @@ import logging
 
 from flask import Blueprint, render_template, request, session
 
-from services.login import user_login, InvalidCredentialsException
+from services.user import check_user_credentials, InvalidCredentialsException
 
-login_api = Blueprint('login_api', __name__)
+user_api = Blueprint('user_api', __name__)
 logger = logging.getLogger(__name__)
 
 
-@login_api.route('/login', methods=['GET', 'POST'])
+@user_api.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
 
@@ -17,7 +17,7 @@ def login():
             error = "Please provide the nick and the password"
         else:
             try:
-                user = user_login(request.form['nick'], request.form['password'])
+                user = check_user_credentials(request.form['nick'], request.form['password'])
                 session['user'] = user
 
                 logger.info("user {} has logged in".format(user.nick))
