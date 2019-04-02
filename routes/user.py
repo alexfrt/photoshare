@@ -24,7 +24,7 @@ def login():
                 session['user'] = user.nick
 
                 logger.info("user {} has logged in".format(user.nick))
-                return redirect(url_for('root'))
+                return redirect(url_for('home_api.home'))
             except InvalidCredentialsException as e:
                 error = str(e)
 
@@ -50,7 +50,7 @@ def join():
                 session['user'] = user.nick
                 logger.info("user {} has been created and logged in".format(user.nick))
 
-                return redirect(url_for('root'))
+                return redirect(url_for('home_api.home'))
             except Exception as e:
                 error = str(e)
 

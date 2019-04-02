@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 from config import Config
@@ -16,13 +16,7 @@ db = SQLAlchemy(app)
 
 from models import *
 from routes.user import user_api
+from routes.home import home_api
 
 app.register_blueprint(user_api)
-
-
-@app.route("/")
-def root():
-    if 'user' in session:
-        return "OLA MUNDO!"
-    else:
-        return redirect(url_for('user_api.login'))
+app.register_blueprint(home_api)
