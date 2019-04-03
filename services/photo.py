@@ -1,13 +1,30 @@
+from datetime import datetime
+from uuid import uuid4
+
 import boto3
 
-
-def get_last_photos(n=100):
-    return [
-        "https://www.petmd.com/sites/default/files/what-does-it-mean-when-cat-wags-tail.jpg",
-        "https://www.catster.com/wp-content/uploads/2017/08/A-fluffy-cat-looking-funny-surprised-or-concerned.jpg"
-    ]
+from config import Config
 
 
-def save_photo(user, photo):
+def get_last_photos():
+    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
+    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    return table.scan()['Items']
+
+
+def save_photo(user, photo, description):
+    key = uuid4().hex
+
     s3 = boto3.resource('s3')
-    s3.Bucket('my-bucket').put_object(Key='test.jpg', Body=photo.stream._file)
+    bucket = s3.Bucket(Config.S3_BUCKET_NAME)
+    bucket.put_object(Key=key, Body=photo, ContentType="image/jpeg")
+
+    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
+    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    table.put_item(Item={
+        'uuid': key,
+        'user': user,
+        'description': description,
+        'when': datetime.now().isoformat(),
+        'likes': 0
+    })
