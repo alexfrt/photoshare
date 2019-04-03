@@ -4,7 +4,7 @@ import os
 class Config(object):
     DEBUG = "DEBUG" in os.environ
     HTTP_PORT = int(os.environ.get('PORT', 5000))
-    SECRET_KEY = os.environ.get("SECRET_KEY", os.urandom(24))
+    SECRET_KEY = os.environ.get("SECRET_KEY", "unsafeKey")
     DATABASE_HOST = os.environ.get("DATABASE_HOST", "localhost")
     DATABASE_NAME = os.environ.get("DATABASE_NAME", "photoshare")
     DATABASE_USER = os.environ.get("DATABASE_USER", "photoshare")
