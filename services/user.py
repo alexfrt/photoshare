@@ -28,6 +28,10 @@ def salt_user_password(user, password=None):
         password = user.password
     return hashlib.sha1("{}--{}".format(password, user.nick).encode("UTF-8")).hexdigest()
 
+def find_user(nick):
+    if nick:
+        return User.query.filter(User.nick.like("%" + nick + "%")).all()
+
 
 class InvalidCredentialsException(Exception):
     pass
