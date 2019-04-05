@@ -27,14 +27,14 @@
                 <div class="input-group">
                     <div class="input-group-prepend">
                         <span class="input-group-text" id="basic-addon1">@</span>
-                     </div>
-                     <input id="nick" type="text" class="form-control" placeholder="Username" aria-label="Username"
-                            name="nick" aria-describedby="basic-addon1">
+                    </div>
+                    <input id="nick" type="text" class="form-control" placeholder="Username" aria-label="Username"
+                           name="nick" aria-describedby="basic-addon1">
 
                     <span class="input-group-btn">
                             <button type="submit" class="btn btn-primary float-right">Search</button>
                     </span>
-                     
+
                     <!-- <input id="nick" type="text" class="form-control" placeholder="Username" aria-label="Username"
                         name="nick" aria-describedby="basic-addon1"> -->
                 </div>
@@ -42,46 +42,40 @@
                     <button type="submit" class="btn btn-primary float-right">Search</button>
                 </div> -->
             </form>
-            
+
             <div class="search-list">
                 <table class="table" id="myTable">
                     <tbody>
-                        {% for u in users %}
+                    {% for u in users %}
                         <tr>
-                            <td><h6>{{ u['name'] }}<h6></td>
+                            <td>
+                                <h6>{{ u['name'] }}<h6>
+                            </td>
                         </tr>
-                        {% endfor %}
+                    {% endfor %}
                     </tbody>
                 </table>
 
             </div>
         </div>
     </div>
-    <div class="row">
-        <div id="carouselExampleControls" class="carousel slide" data-ride="carousel" data-interval="1000">
-            <!-- Wrapper for slides -->
-            <div class="carousel-inner">
-                {% for photo in photos %}
-                    <div class="carousel-item {{ photo['active'] }}">
-                        <img src="https://s3.amazonaws.com/{{ bucket }}/{{ photo['uuid'] }}"
-                             alt="{{ photo['description'] }}" class="d-block img-fluid">
-                        <div class="carousel-caption d-none d-md-block">
-                            <h5>{{ photo['description'] }}</h5>
-                            <p>Published by {{ photo['user'] }} at {{ photo['when'] }}</p>
-                        </div>
+    <div class="row justify-content-md-center">
+        {% for photo in photos %}
+            <div class="card" style="width: 18rem;">
+                <div class="card-header">
+                    <span class="badge badge-dark">{{ photo['likes'] }} likes</span>
+                    <div class="float-right">
+                        <a href="#" class="badge badge-pill badge-light pull-right">Like</a>
                     </div>
-                {% endfor %}
+                </div>
+                <img class="card-img-top" src="https://s3.amazonaws.com/{{ bucket }}/{{ photo['uuid'] }}"
+                     alt="{{ photo['description'] }}">
+                <div class="card-body">
+                    <h5>{{ photo['description'] }}</h5>
+                    <p>Published by {{ photo['user'] }} at {{ photo['when'] }}</p>
+                </div>
             </div>
-
-            <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="sr-only">Next</span>
-            </a>
-        </div>
+        {% endfor %}
     </div>
 
     <!-- MODAL html -->
