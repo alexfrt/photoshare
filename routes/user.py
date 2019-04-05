@@ -22,6 +22,7 @@ def login():
             try:
                 user = check_user_credentials(request.form['nick'], request.form['password'])
                 session['user'] = user.nick
+                session['logged_in'] = True
 
                 logger.info("user {} has logged in".format(user.nick))
                 return redirect(url_for('home_api.home'))
@@ -48,6 +49,8 @@ def join():
                 ))
 
                 session['user'] = user.nick
+                session['logged_in'] = True
+
                 logger.info("user {} has been created and logged in".format(user.nick))
 
                 return redirect(url_for('home_api.home'))

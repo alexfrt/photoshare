@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 
 from config import Config
@@ -20,3 +20,9 @@ from routes.home import home_api
 
 app.register_blueprint(user_api)
 app.register_blueprint(home_api)
+
+
+@app.before_request
+def session_filter():
+    if 'logged_in' not in session and request.endpoint not in ['user_api.login', 'user_api.join']:
+        return redirect(url_for('user_api.login'))
