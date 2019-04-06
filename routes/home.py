@@ -13,9 +13,6 @@ logger = logging.getLogger(__name__)
 @home_api.route("/")
 def home():
     photos = get_last_photos(session['user'])
-    if len(photos) > 0:
-        photos[0]['active'] = 'active'
-
     return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, users=[])
 
 
@@ -23,9 +20,6 @@ def home():
 def search():
     users = find_user(request.form['nick'])
     photos = get_last_photos(session['user'])
-    if len(photos) > 0:
-        photos[0]['active'] = 'active'
-
     return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, users=users)
 
 
