@@ -2,14 +2,27 @@ from datetime import datetime
 from uuid import uuid4
 
 import boto3
+from boto3.dynamodb.conditions import Key
 
 from config import Config
 
 
-def get_last_photos():
+def get_last_photos(user):
     dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
-    return table.scan()['Items']
+    photos_table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+
+    photos = photos_table.scan()['Items']
+
+    sorted(photos, key=lambda p: p['when'], reverse=True)
+
+    for photo in photos:
+        if 'likes' in photo:
+            photo['num_likes'] = len(photo['likes'])
+            photo['did_like'] = user in photo['likes']
+        else:
+            photo['num_likes'] = 0
+
+    return photos
 
 
 def save_photo(user, photo, description):
@@ -26,5 +39,45 @@ def save_photo(user, photo, description):
         'user': user,
         'description': description,
         'when': datetime.now().isoformat(),
-        'likes': 0
+        'likes': list()
     })
+
+
+def like_photo(photo_uuid, user):
+    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
+    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+
+    photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
+    if len(photo) == 0:
+        return
+
+    photo = photo[0]
+
+    if user not in photo['likes']:
+        table.update_item(
+            Key={
+                'uuid': photo_uuid
+            },
+            UpdateExpression="SET likes = list_append(likes, :user)",
+            ExpressionAttributeValues={":user": [user]},
+        )
+
+
+def dislike_photo(photo_uuid, user):
+    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
+    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+
+    photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
+    if len(photo) == 0:
+        return
+
+    photo = photo[0]
+
+    if user in photo['likes']:
+        # obviously not atomic...
+        table.update_item(
+            Key={
+                'uuid': photo_uuid
+            },
+            UpdateExpression="REMOVE likes[%d]" % photo['likes'].index(user)
+        )

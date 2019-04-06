@@ -20,7 +20,7 @@
             </button>
         </div>
         <div class="col-6">
-            <p class="display-4 text-center">Photoshare</p>
+            <p class="display-4 text-center">PhotoShare</p>
         </div>
         <div class="col-4">
             <form action="search" method=post>
@@ -63,9 +63,13 @@
         {% for photo in photos %}
             <div class="card" style="width: 18rem;">
                 <div class="card-header">
-                    <span class="badge badge-dark">{{ photo['likes'] }} likes</span>
+                    <span class="badge badge-dark">{{ photo['num_likes'] }} likes</span>
                     <div class="float-right">
-                        <a href="#" class="badge badge-pill badge-light pull-right">Like</a>
+                        {% if not photo['did_like'] %}
+                            <a href="like/{{ photo['uuid'] }}" class="badge badge-pill badge-light pull-right">Like</a>
+                        {% else %}
+                            <a href="dislike/{{ photo['uuid'] }}" class="badge badge-pill badge-danger pull-right">Dislike</a>
+                        {% endif %}
                     </div>
                 </div>
                 <img class="card-img-top" src="https://s3.amazonaws.com/{{ bucket }}/{{ photo['uuid'] }}"
