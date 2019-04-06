@@ -41,5 +41,4 @@ def upload():
         return redirect(url_for('home_api.home'))
 
     save_photo(session['user'], request.files['photo'].stream, request.form['description'])
-
     return redirect(url_for("home_api.home"))

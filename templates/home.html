@@ -12,63 +12,56 @@
     <title>PhotoShare</title>
 </head>
 <body>
-<div class="container">
-    <div class="row justify-content-md-center">
-        <div class="col">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">
-                Upload
-            </button>
-        </div>
-        <div class="col-6">
-            <p class="display-4 text-center">PhotoShare</p>
-        </div>
-        <div class="col-4">
-            <form action="search" method=post>
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text" id="basic-addon1">@</span>
-                    </div>
-                    <input id="nick" type="text" class="form-control" placeholder="Username" aria-label="Username"
-                           name="nick" aria-describedby="basic-addon1">
 
-                    <span class="input-group-btn">
-                            <button type="submit" class="btn btn-primary float-right">Search</button>
-                    </span>
-
-                    <!-- <input id="nick" type="text" class="form-control" placeholder="Username" aria-label="Username"
-                        name="nick" aria-describedby="basic-addon1"> -->
-                </div>
-                <!-- <div class="input-group-prepend">
-                    <button type="submit" class="btn btn-primary float-right">Search</button>
-                </div> -->
-            </form>
-
-            <div class="search-list">
-                <table class="table" id="myTable">
-                    <tbody>
-                    {% for u in users %}
-                        <tr>
-                            <td>
-                                <h6>{{ u['name'] }}<h6>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-
-            </div>
-        </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/">
+        PhotoShare
+    </a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="modal" data-target="#uploadModal" href="#">Share</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/">Settings</a>
+            </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
     </div>
-    <div class="row justify-content-md-center">
+</nav>
+<br>
+<div class="container">
+    {# <div class="search-list">
+        <table class="table" id="myTable">
+            <tbody>
+            {% for u in users %}
+                <tr>
+                    <td>
+                        <h6>{{ u['name'] }}<h6>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>#}
+
+    <!-- photos div -->
+    <div class="row justify-content-center">
         {% for photo in photos %}
             <div class="card" style="width: 18rem;">
                 <div class="card-header">
                     <span class="badge badge-dark">{{ photo['num_likes'] }} likes</span>
                     <div class="float-right">
                         {% if not photo['did_like'] %}
-                            <a href="like/{{ photo['uuid'] }}" class="badge badge-pill badge-light pull-right">Like</a>
+                            <a href="like/{{ photo['uuid'] }}" class="badge badge-pill badge-success">Like</a>
                         {% else %}
-                            <a href="dislike/{{ photo['uuid'] }}" class="badge badge-pill badge-danger pull-right">Dislike</a>
+                            <a href="dislike/{{ photo['uuid'] }}" class="badge badge-pill badge-danger">Dislike</a>
                         {% endif %}
                     </div>
                 </div>
@@ -82,13 +75,13 @@
         {% endfor %}
     </div>
 
-    <!-- MODAL html -->
+    <!-- share modal div -->
     <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Upload new photo</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Share a photo</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
