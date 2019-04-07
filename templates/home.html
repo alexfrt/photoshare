@@ -135,19 +135,22 @@
                 <form action="search">
                     <div class="form-group">
                         <label for="userSearch">User</label>
-                        <input id="userSearch" type="text" class="form-control" name="user" placeholder="User">
+                        <input id="userSearch" type="text" class="form-control" name="user" placeholder="User"
+                               required="required">
                     </div>
                     <button type="submit" class="btn btn-primary">Search user</button>
                 </form>
                 <hr/>
-                <form action="filter">
+                <form action="filter" method="POST">
                     <div class="form-group">
                         <label for="startFilter">Start Date</label>
-                        <input id="startFilter" type="text" class="form-control" name="start" placeholder="Start Date">
+                        <input id="startFilter" type="text" class="form-control" name="start" placeholder="Start Date"
+                               required="required">
                     </div>
                     <div class="form-group">
                         <label for="endFilter">End Date</label>
-                        <input id="endFilter" type="text" class="form-control" name="end" placeholder="End Date">
+                        <input id="endFilter" type="text" class="form-control" name="end" placeholder="End Date"
+                               required="required">
                     </div>
                     <button type="submit" class="btn btn-primary">Filter by date</button>
                 </form>

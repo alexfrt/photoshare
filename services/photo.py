@@ -3,15 +3,18 @@ from uuid import uuid4
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from dateutil.parser import parse
 
 from config import Config
 
 
-def get_last_photos(user):
+def get_last_photos(user, start=None, end=None):
     dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    photos_table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
 
-    photos = photos_table.scan()['Items']
+    photos = table.scan()['Items']  # obviously not efficient
+    if start is not None and end is not None:
+        photos = [photo for photo in photos if start <= parse(photo['when']) <= end]
 
     sorted(photos, key=lambda p: p['when'], reverse=True)
 

@@ -1,8 +1,11 @@
 import logging
+from datetime import datetime
+from time import strptime, mktime
 
-from flask import Blueprint, redirect, url_for, render_template, request, session
+from flask import Blueprint, redirect, url_for, render_template, request, session, flash
 
 from config import Config
+from routes import messages
 from services.photo import get_last_photos, save_photo, like_photo, dislike_photo
 from services.user import find_user
 
@@ -21,6 +24,19 @@ def search():
     users = find_user(request.form['nick'])
     photos = get_last_photos(session['user'])
     return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, users=users)
+
+
+@home_api.route("/filter", methods=['POST'])
+def date_filter():
+    start = datetime.fromtimestamp(mktime(strptime(request.form['start'], "%d/%m/%Y")))
+    end = datetime.fromtimestamp(mktime(strptime(request.form['end'], "%d/%m/%Y")))
+
+    if start < end:
+        photos = get_last_photos(session['user'], start, end)
+        return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME)
+    else:
+        flash(messages.INVALID_DATE_FILTER)
+        return redirect(url_for("home_api.home"))
 
 
 @home_api.route("/like/<photo_uuid>", methods=['GET'])

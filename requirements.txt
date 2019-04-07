@@ -4,3 +4,4 @@ flask-migrate
 psycopg2-binary
 flask-script
 boto3
+python-dateutil
