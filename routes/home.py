@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 @home_api.route("/")
 def home():
     photos = get_last_photos(session['user'])
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, users=[])
+    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME)
 
 
 @home_api.route("/search", methods=['GET', 'POST'])
