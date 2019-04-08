@@ -2,6 +2,7 @@ import hashlib
 
 from app import db
 from models.user import User
+from services.photo import save_photo_profile
 
 
 def create_user(user):
@@ -12,6 +13,19 @@ def create_user(user):
     db.session.commit()
 
     return user
+
+
+def update_user(current_user, photo_profile, user):
+    new_user = User.query.filter_by(nick=current_user).first()
+    new_user.nick = user.nick
+    new_user.name = user.name
+    new_user.email = user.email
+    new_user.photo_profile = save_photo_profile(photo_profile) if photo_profile else None
+    new_user.password = salt_user_password(user) if user.password else new_user.password
+
+    db.session.commit()
+
+    return new_user
 
 
 def check_user_credentials(nick, password):

@@ -15,15 +15,15 @@ logger = logging.getLogger(__name__)
 
 @home_api.route("/")
 def home():
-    photos = get_last_photos(session['user'])
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME)
+    photos = get_last_photos(session['user']['nick'])
+    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None)
 
 
 @home_api.route("/search", methods=['GET', 'POST'])
 def search():
     users = find_user(request.form['nick'])
-    photos = get_last_photos(session['user'])
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, users=users)
+    photos = get_last_photos(session['user']['nick'])
+    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, users=users, error=None)
 
 
 @home_api.route("/filter", methods=['POST'])
@@ -32,8 +32,8 @@ def date_filter():
     end = datetime.fromtimestamp(mktime(strptime(request.form['end'], "%d/%m/%Y")))
 
     if start < end:
-        photos = get_last_photos(session['user'], start, end)
-        return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME)
+        photos = get_last_photos(session['user']['nick'], start, end)
+        return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None)
     else:
         flash(messages.INVALID_DATE_FILTER)
         return redirect(url_for("home_api.home"))
@@ -41,13 +41,13 @@ def date_filter():
 
 @home_api.route("/like/<photo_uuid>", methods=['GET'])
 def like(photo_uuid):
-    like_photo(photo_uuid, session['user'])
+    like_photo(photo_uuid, session['user']['nick'])
     return redirect(url_for("home_api.home"))
 
 
 @home_api.route("/dislike/<photo_uuid>", methods=['GET'])
 def dislike(photo_uuid):
-    dislike_photo(photo_uuid, session['user'])
+    dislike_photo(photo_uuid, session['user']['nick'])
     return redirect(url_for("home_api.home"))
 
 
@@ -56,5 +56,5 @@ def upload():
     if 'photo' not in request.files or request.files['photo'].filename == '':
         return redirect(url_for('home_api.home'))
 
-    save_photo(session['user'], request.files['photo'].stream, request.form['description'])
+    save_photo(session['user']['nick'], request.files['photo'].stream, request.form['description'])
     return redirect(url_for("home_api.home"))

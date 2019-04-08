@@ -17,9 +17,11 @@ db = SQLAlchemy(app)
 from models import *
 from routes.user import user_api
 from routes.home import home_api
+from helper.encoder import CustomJSONEncoder
 
 app.register_blueprint(user_api)
 app.register_blueprint(home_api)
+app.json_encoder = CustomJSONEncoder
 
 
 @app.before_request

@@ -45,6 +45,14 @@ def save_photo(user, photo, description):
         'likes': list()
     })
 
+def save_photo_profile(photo):
+    key = uuid4().hex
+
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(Config.S3_BUCKET_NAME)
+    bucket.put_object(Key=key, Body=photo, ContentType="image/jpeg")
+
+    return key
 
 def like_photo(photo_uuid, user):
     dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
