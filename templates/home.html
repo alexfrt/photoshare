@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -7,233 +8,266 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <title>PhotoShare</title>
 </head>
+
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="/">
-        PhotoShare
-    </a>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <div class="avatar">
-                    <img alt="" src="https://s3.amazonaws.com/{{ bucket }}/{{ session['user']['photo_profile'] }}"
-                        style="width: 32px; height: 32px;">
-                    <small><span>{{ session['user']['name'] }} ({{ session['user']['nick']}})</span></small>
-                </div>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" href="/">Home</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="modal" data-target="#uploadModal" href="#">Share</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="modal" data-target="#settingsModal" href="#">Settings</a>
-            </li>
-        </ul>
-        <div class="navbar-nav">
-            <button class="btn btn-outline-primary" data-toggle="modal" data-target="#searchModal" type="button">
-                Search
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">
+            PhotoShare
+        </a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <div class="avatar">
+                        <img alt="" src="https://s3.amazonaws.com/{{ bucket }}/{{ session['user']['photo_profile'] }}"
+                            style="width: 32px; height: 32px;" class="rounded-circle">
+                        <small><span>{{ session['user']['name'] }} ({{ session['user']['nick']}})</span></small>
+                    </div>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="modal" data-target="#uploadModal" href="#">Share</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="modal" data-target="#settingsModal" href="#">Settings</a>
+                </li>
+            </ul>
+            <div class="navbar-nav">
+                <button class="btn btn-outline-primary" data-toggle="modal" data-target="#searchModal" type="button">
+                    Search
+                </button>
+            </div>
+        </div>
+    </nav>
+    <br>
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="row justify-content-center">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {% for message in messages %}
+                <p>{{ message }}</p>
+                {% endfor %}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>OMG!</strong>
+            {{ error }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
             </button>
         </div>
-    </div>
-</nav>
-<br>
-<div class="container">
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="row justify-content-center">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {% for message in messages %}
-                        <p>{{ message }}</p>
-                    {% endfor %}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            </div>
         {% endif %}
-    {% endwith %}
-    {% if error %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>OMG!</strong>
-        {{ error }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    {% endif %}
 
-    <!-- photos div -->
-    <div class="row justify-content-center">
-        {% for photo in photos %}
+        <!-- photos div -->
+        <div class="row justify-content-center">
+            {% for photo in photos %}
             <div class="card" style="width: 18rem;">
                 <div class="card-header">
                     <span class="badge badge-dark">{{ photo['num_likes'] }} likes</span>
                     <div class="float-right">
                         {% if not photo['did_like'] %}
-                            <a href="like/{{ photo['uuid'] }}" class="badge badge-pill badge-success">Like</a>
+                        <a href="like/{{ photo['uuid'] }}" class="badge badge-pill badge-success">Like</a>
                         {% else %}
-                            <a href="dislike/{{ photo['uuid'] }}" class="badge badge-pill badge-danger">Dislike</a>
+                        <a href="dislike/{{ photo['uuid'] }}" class="badge badge-pill badge-danger">Dislike</a>
                         {% endif %}
                     </div>
                 </div>
                 <img class="card-img-top" src="https://s3.amazonaws.com/{{ bucket }}/{{ photo['uuid'] }}"
-                     alt="{{ photo['description'] }}">
+                    alt="{{ photo['description'] }}">
                 <div class="card-body">
                     <h5>{{ photo['description'] }}</h5>
                     <p>Published by {{ photo['user'] }} at {{ photo['when'] }}</p>
                 </div>
             </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
-</div>
-<!-- upload modal -->
-<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModal"
-     aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Share a photo</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="upload" method="POST" autocomplete="off" id="uploadForm"
-                      enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="sharePhoto">File:</label>
-                        <input id="sharePhoto" type="file" accept="image/*" class="form-control" name="photo"
-                               required="required">
-                    </div>
-                    <div class="form-group">
-                        <label for="shareDescription">Description:</label>
-                        <input id="shareDescription" type="text" class="form-control" name="description"
-                               required="required">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="submit" form="uploadForm" class="btn btn-primary">Share Photo</button>
+    <!-- upload modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModal"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Share a photo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="upload" method="POST" autocomplete="off" id="uploadForm"
+                        enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="sharePhoto">File:</label>
+                            <input id="sharePhoto" type="file" accept="image/*" class="form-control" name="photo"
+                                required="required">
+                        </div>
+                        <div class="form-group">
+                            <label for="shareDescription">Description:</label>
+                            <input id="shareDescription" type="text" class="form-control" name="description"
+                                required="required">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" form="uploadForm" class="btn btn-primary">Share Photo</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<!-- settings modal -->
-<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModal"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">User settings</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-10">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="avatar">
-                                        <img alt="" src="https://s3.amazonaws.com/{{ bucket }}/{{ session['user']['photo_profile'] }}"
-                                        style="width: 128px; height: 128px;">
+    <!-- settings modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModal"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">User settings</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-10">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="avatar">
+                                            <img alt=""
+                                                src="https://s3.amazonaws.com/{{ bucket }}/{{ session['user']['photo_profile'] }}"
+                                                style="width: 128px; height: 128px;" class="rounded-circle">
+                                        </div>
+                                        <form action="settings" method="POST" autocomplete="off" id="settingsForm"
+                                            enctype="multipart/form-data">
+                                            <div class="form-group">
+                                                <label for="ph_profile">Photo Profile:</label>
+                                                <input id="ph_profile" type="file" accept="image/*" class="form-control"
+                                                    name="photo_profile">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new_name">Name:</label>
+                                                <input id="new_name" type="text" class="form-control" name="new_name"
+                                                    required="required" value="{{ session['user']['name'] }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new_email">E-Mail:</label>
+                                                <input id="new_email" type="email" class="form-control" name="new_email"
+                                                    required="required" value="{{ session['user']['email'] }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new_nick">Nick:</label>
+                                                <input id="new_nick" type="text" class="form-control" name="new_nick"
+                                                    required="required" value="{{ session['user']['nick'] }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new_password">Password:</label>
+                                                <input id="new_password" type="password" class="form-control"
+                                                    name="new_password" value="{{ session['user']['password'] }}">
+                                            </div>
+                                        </form>
                                     </div>
-                                    <form action="settings" method="POST" autocomplete="off" id="settingsForm"
-                                        enctype="multipart/form-data">
-                                        <div class="form-group">
-                                            <label for="ph_profile">Photo Profile:</label>
-                                            <input id="ph_profile" type="file" accept="image/*" class="form-control" name="photo_profile">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="new_name">Name:</label>
-                                            <input id="new_name" type="text" class="form-control" name="new_name"
-                                                required="required" value="{{ session['user']['name'] }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="new_email">E-Mail:</label>
-                                            <input id="new_email" type="email" class="form-control" name="new_email"
-                                                required="required" value="{{ session['user']['email'] }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="new_nick">Nick:</label>
-                                            <input id="new_nick" type="text" class="form-control" name="new_nick"
-                                                required="required" value="{{ session['user']['nick'] }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="new_password">Password:</label>
-                                            <input id="new_password" type="password" class="form-control"
-                                                name="new_password" value="{{ session['user']['password'] }}">
-                                        </div>
-                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="submit" form="settingsForm" class="btn btn-primary">Update settings</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" form="settingsForm" class="btn btn-primary">Update settings</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-
-<div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Search</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="search">
+    <!-- search modal -->
+    <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Search</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
                     <div class="form-group">
                         <label for="userSearch">User</label>
-                        <input id="userSearch" type="text" class="form-control" name="user" placeholder="User"
-                               required="required">
+                        <input id="userSearch" type="text" class="form-control" name="user_nick" placeholder="User"
+                            required="required">
                     </div>
                     <button type="submit" class="btn btn-primary">Search user</button>
-                </form>
-                <hr/>
-                <form action="filter" method="POST">
-                    <div class="form-group">
-                        <label for="startFilter">Start Date</label>
-                        <input id="startFilter" type="text" class="form-control" name="start" placeholder="Start Date"
-                               required="required">
-                    </div>
-                    <div class="form-group">
-                        <label for="endFilter">End Date</label>
-                        <input id="endFilter" type="text" class="form-control" name="end" placeholder="End Date"
-                               required="required">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Filter by date</button>
-                </form>
+                    <hr />
+                    <table>
+                        <tbody id="userTables">
+                            {% for u in users %}
+                            <tr>
+                                <td>
+                                    <img alt="" src="https://s3.amazonaws.com/{{ bucket }}/{{ u.photo_profile }}"
+                                    style="width: 32px; height: 32px;" class="rounded-circle">
+                                    <a href="user/{{ u.nick }}"><small><span>{{ u.name }} ({{ u.nick }})</span></small></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <hr />
+                    <form action="filter" method="POST">
+                        <div class="form-group">
+                            <label for="startFilter">Start Date</label>
+                            <input id="startFilter" type="text" class="form-control" name="start"
+                                placeholder="Start Date" required="required">
+                        </div>
+                        <div class="form-group">
+                            <label for="endFilter">End Date</label>
+                            <input id="endFilter" type="text" class="form-control" name="end" placeholder="End Date"
+                                required="required">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Filter by date</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
         crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+    
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#userTables").hide();
+
+            $("#userSearch").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                if(value !== '') {
+                    $("#userTables").show();
+                } else {
+                    $("#userTables").hide();
+                }
+                $("#userTables tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
 </body>
+
 </html>

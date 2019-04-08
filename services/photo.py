@@ -28,6 +28,29 @@ def get_last_photos(user, start=None, end=None):
     return photos
 
 
+def get_photo_by_user(user):
+    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
+    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+
+    photos_filtered = list()
+    photos = table.scan()['Items']  # obviously not efficient
+
+    for photo in photos:
+        if photo['user'] == user:
+            photos_filtered.append(photo)
+    
+    sorted(photos_filtered, key=lambda p: p['when'], reverse=True)
+
+    for photo in photos_filtered:
+        if 'likes' in photo:
+            photo['num_likes'] = len(photo['likes'])
+            photo['did_like'] = user in photo['likes']
+        else:
+            photo['num_likes'] = 0
+
+    return photos_filtered
+
+
 def save_photo(user, photo, description):
     key = uuid4().hex
 
