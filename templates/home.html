@@ -71,6 +71,14 @@
         </div>
         {% endif %}
 
+        {% if visited_user %}
+        <div>
+            <img alt="" src="https://s3.amazonaws.com/{{ bucket }}/{{ visited_user.photo_profile }}"
+                style="width: 64px; height: 64px;" class="rounded-circle">
+            <small><span>{{ visited_user.name }} ({{ visited_user.nick }})</span></small>
+        </div>
+        {% endif %}
+
         <!-- photos div -->
         <div class="row justify-content-center">
             {% for photo in photos %}

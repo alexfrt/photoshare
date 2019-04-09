@@ -23,7 +23,7 @@ def find_user(nick):
     u = find_by_nick(nick)
     photos = get_photo_by_user(u.nick)
     users = get_users()
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None, users=users)
+    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None, visited_user=u)
 
 
 @home_api.route("/filter", methods=['POST'])
