@@ -23,7 +23,7 @@
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
                     <div class="avatar">
-                        <img alt="" src="https://s3.amazonaws.com/{{ bucket }}/{{ session['user']['photo_profile'] }}"
+                        <img alt="" src="https://storage.googleapis.com/{{ bucket }}/{{ session['user']['photo_profile'] }}"
                             style="width: 32px; height: 32px;" class="rounded-circle">
                         <small><span>{{ session['user']['name'] }} ({{ session['user']['nick']}})</span></small>
                     </div>
@@ -73,7 +73,7 @@
 
         {% if visited_user %}
         <div>
-            <img alt="" src="https://s3.amazonaws.com/{{ bucket }}/{{ visited_user.photo_profile }}"
+            <img alt="" src="https://storage.googleapis.com/{{ bucket }}/{{ visited_user.photo_profile }}"
                 style="width: 64px; height: 64px;" class="rounded-circle">
             <small><span>{{ visited_user.name }} ({{ visited_user.nick }})</span></small>
         </div>
@@ -84,16 +84,16 @@
             {% for photo in photos %}
             <div class="card" style="width: 18rem;">
                 <div class="card-header">
-                    <span class="badge badge-dark">{{ photo['num_likes'] }} likes</span>
+                    <!-- <span class="badge badge-dark">{{ photo['num_likes'] }} likes</span>
                     <div class="float-right">
                         {% if not photo['did_like'] %}
                         <a href="like/{{ photo['uuid'] }}" class="badge badge-pill badge-success">Like</a>
                         {% else %}
                         <a href="dislike/{{ photo['uuid'] }}" class="badge badge-pill badge-danger">Dislike</a>
                         {% endif %}
-                    </div>
+                    </div> -->
                 </div>
-                <img class="card-img-top" src="https://s3.amazonaws.com/{{ bucket }}/{{ photo['uuid'] }}"
+                <img class="card-img-top" src="https://storage.googleapis.com/{{ bucket }}/{{ photo['filename']}}"
                     alt="{{ photo['description'] }}">
                 <div class="card-body">
                     <h5>{{ photo['description'] }}</h5>
@@ -155,7 +155,7 @@
                                     <div class="card-body">
                                         <div class="avatar">
                                             <img alt=""
-                                                src="https://s3.amazonaws.com/{{ bucket }}/{{ session['user']['photo_profile'] }}"
+                                                src="https://storage.googleapis.com/{{ bucket }}/{{ session['user']['photo_profile'] }}"
                                                 style="width: 128px; height: 128px;" class="rounded-circle">
                                         </div>
                                         <form action="settings" method="POST" autocomplete="off" id="settingsForm"
@@ -223,7 +223,7 @@
                             {% for u in users %}
                             <tr>
                                 <td>
-                                    <img alt="" src="https://s3.amazonaws.com/{{ bucket }}/{{ u.photo_profile }}"
+                                    <img alt="" src="https://storage.googleapis.com/{{ bucket }}/{{ u.photo_profile }}"
                                     style="width: 32px; height: 32px;" class="rounded-circle">
                                     <a href="user/{{ u.nick }}"><small><span>{{ u.name }} ({{ u.nick }})</span></small></a>
                                 </td>

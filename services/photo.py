@@ -1,117 +1,144 @@
 from datetime import datetime
 from uuid import uuid4
 
-import boto3
-from boto3.dynamodb.conditions import Key
 from dateutil.parser import parse
+from google.cloud import storage
+from google.cloud import datastore
+from werkzeug import secure_filename
 
 from config import Config
 
 
 def get_last_photos(user, start=None, end=None):
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
-
-    photos = table.scan()['Items']  # obviously not efficient
+    photos = _query()
     if start is not None and end is not None:
         photos = [photo for photo in photos if start <= parse(photo['when']) <= end]
-
-    sorted(photos, key=lambda p: p['when'], reverse=True)
-
-    for photo in photos:
-        if 'likes' in photo:
-            photo['num_likes'] = len(photo['likes'])
-            photo['did_like'] = user in photo['likes']
-        else:
-            photo['num_likes'] = 0
+    # for photo in photos:
+    #     if 'likes' in photo:
+    #         photo['num_likes'] = len(photo['likes'])
+    #         photo['did_like'] = user in photo['likes']
+    #     else:
+    #         photo['num_likes'] = 0
 
     return photos
 
-
 def get_photo_by_user(user):
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    return _query(user)
+    # for photo in photos_filtered:
+    #     if 'likes' in photo:
+    #         photo['num_likes'] = len(photo['likes'])
+    #         photo['did_like'] = user in photo['likes']
+    #     else:
+    #         photo['num_likes'] = 0
 
-    photos_filtered = list()
-    photos = table.scan()['Items']  # obviously not efficient
+    # return photos_filtered
 
-    for photo in photos:
-        if photo['user'] == user:
-            photos_filtered.append(photo)
-    
-    sorted(photos_filtered, key=lambda p: p['when'], reverse=True)
+def save_photo(user, photo, filename, description):
+    filename_formated = _save(photo, filename)
 
-    for photo in photos_filtered:
-        if 'likes' in photo:
-            photo['num_likes'] = len(photo['likes'])
-            photo['did_like'] = user in photo['likes']
-        else:
-            photo['num_likes'] = 0
+    ds_client = datastore.Client(Config.PROJECT_ID)
 
-    return photos_filtered
+    entity = datastore.Entity(
+        key = ds_client.key('Photo'),
+        exclude_from_indexes = ['description', 'likes'])
 
-
-def save_photo(user, photo, description):
-    key = uuid4().hex
-
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(Config.S3_BUCKET_NAME)
-    bucket.put_object(Key=key, Body=photo, ContentType="image/jpeg")
-
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
-    table.put_item(Item={
-        'uuid': key,
+    data = {
+        'filename': filename_formated,
         'user': user,
         'description': description,
         'when': datetime.now().isoformat(),
         'likes': list()
-    })
+    }
 
-def save_photo_profile(photo):
-    key = uuid4().hex
+    entity.update(data)
+    ds_client.put(entity)
 
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(Config.S3_BUCKET_NAME)
-    bucket.put_object(Key=key, Body=photo, ContentType="image/jpeg")
-
-    return key
+def save_photo_profile(photo, filename):
+    return _save(photo, filename)
 
 def like_photo(photo_uuid, user):
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    # dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
+    # table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
 
-    photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
-    if len(photo) == 0:
-        return
+    # photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
+    # if len(photo) == 0:
+    #     return
 
-    photo = photo[0]
+    # photo = photo[0]
 
-    if user not in photo['likes']:
-        table.update_item(
-            Key={
-                'uuid': photo_uuid
-            },
-            UpdateExpression="SET likes = list_append(likes, :user)",
-            ExpressionAttributeValues={":user": [user]},
-        )
+    # if user not in photo['likes']:
+    #     table.update_item(
+    #         Key={
+    #             'uuid': photo_uuid
+    #         },
+    #         UpdateExpression="SET likes = list_append(likes, :user)",
+    #         ExpressionAttributeValues={":user": [user]},
+    #     )
+    return "" # Remove it
 
 
 def dislike_photo(photo_uuid, user):
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    # dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
+    # table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
 
-    photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
-    if len(photo) == 0:
-        return
+    # photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
+    # if len(photo) == 0:
+    #     return
 
-    photo = photo[0]
+    # photo = photo[0]
 
-    if user in photo['likes']:
-        # obviously not atomic...
-        table.update_item(
-            Key={
-                'uuid': photo_uuid
-            },
-            UpdateExpression="REMOVE likes[%d]" % photo['likes'].index(user)
-        )
+    # if user in photo['likes']:
+    #     # obviously not atomic...
+    #     table.update_item(
+    #         Key={
+    #             'uuid': photo_uuid
+    #         },
+    #         UpdateExpression="REMOVE likes[%d]" % photo['likes'].index(user)
+    #     )
+    
+    return "" # Remove it
+
+def from_datastore(entity):
+    if not entity:
+        return None
+    if isinstance(entity, list):
+        entity = entity.pop()
+
+    entity['id'] = entity.key.id
+
+    return entity
+
+def _safe_filename(filename):
+    filename = secure_filename(filename)
+    date =  datetime.now().isoformat()
+    basename, extension = filename.rsplit('.', 1)
+    return "{0}-{1}.{2}".format(basename, date, extension)
+
+def _save(photo, filename):
+    storage_client = storage.Client(project=Config.PROJECT_ID)
+    bucket = storage_client.bucket(Config.CLOUD_STORAGE_BUCKET)
+    filename_formated = _safe_filename(filename)
+    blob = bucket.blob(filename_formated)
+
+    blob.upload_from_string(
+        photo,
+        content_type="image/jpeg")
+
+    return filename_formated
+
+def _query(user=None):
+    ds_client = datastore.Client(Config.PROJECT_ID)
+
+    query = ds_client.query(kind='Photo')
+
+    if user:
+        query.add_filter('user', '=', user)
+
+    query.order = ['-when']
+
+    query_iterator = query.fetch()
+    page = next(query_iterator.pages)
+
+    entities = list(map(from_datastore, page))
+
+    return entities

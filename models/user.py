@@ -7,7 +7,7 @@ class User(db.Model):
     nick = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(40), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    photo_profile = db.Column(db.String(40), unique=True, nullable=True)
+    photo_profile = db.Column(db.String(100), unique=True, nullable=True)
 
     def __init__(self, name, nick, password, email, photo_profile=None, id=None):
         self.id = id

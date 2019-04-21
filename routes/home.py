@@ -15,7 +15,7 @@ home_api = Blueprint('home_api', __name__)
 def home():
     photos = get_last_photos(session['user']['nick'])
     users = get_users()
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None, users=users)
+    return render_template('home.html', photos=photos, bucket=Config.CLOUD_STORAGE_BUCKET, error=None, users=users)
 
 
 @home_api.route("/user/<nick>", methods=['GET'])
@@ -23,7 +23,7 @@ def find_user(nick):
     u = find_by_nick(nick)
     photos = get_photo_by_user(u.nick)
     users = get_users()
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None, visited_user=u)
+    return render_template('home.html', photos=photos, bucket=Config.CLOUD_STORAGE_BUCKET, error=None, visited_user=u)
 
 
 @home_api.route("/filter", methods=['POST'])
@@ -34,7 +34,7 @@ def date_filter():
     if start < end:
         photos = get_last_photos(session['user']['nick'], start, end)
         users = get_users()
-        return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None, users=users)
+        return render_template('home.html', photos=photos, bucket=Config.CLOUD_STORAGE_BUCKET, error=None, users=users)
     else:
         flash(messages.INVALID_DATE_FILTER)
         return redirect(url_for("home_api.home"))
@@ -56,6 +56,8 @@ def dislike(photo_uuid):
 def upload():
     if 'photo' not in request.files or request.files['photo'].filename == '':
         return redirect(url_for('home_api.home'))
+    
+    file = request.files.get('photo')
 
-    save_photo(session['user']['nick'], request.files['photo'].stream, request.form['description'])
+    save_photo(session['user']['nick'], file.read(), file.filename, request.form['description'])
     return redirect(url_for("home_api.home"))

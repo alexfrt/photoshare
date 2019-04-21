@@ -106,3 +106,5 @@ venv.bak/
 .idea
 migrations
 .aws
+cloudsql
+cloud_sql_proxy

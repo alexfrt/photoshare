@@ -15,12 +15,12 @@ def create_user(user):
     return user
 
 
-def update_user(current_user, photo_profile, user):
+def update_user(current_user, photo_profile, filename, user):
     new_user = User.query.filter_by(nick=current_user).first()
     new_user.nick = user.nick
     new_user.name = user.name
     new_user.email = user.email
-    new_user.photo_profile = save_photo_profile(photo_profile) if photo_profile else None
+    new_user.photo_profile = save_photo_profile(photo_profile, filename) if photo_profile and filename else None
     new_user.password = salt_user_password(user) if user.password else new_user.password
 
     db.session.commit()

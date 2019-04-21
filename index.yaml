@@ -1,0 +1,8 @@
+indexes:
+
+- kind: Photo
+  ancestor: no
+  properties:
+  - name: user
+  - name: when
+    direction: desc

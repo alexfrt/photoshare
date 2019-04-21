@@ -76,9 +76,9 @@ def settings():
                     pswd = request.form['new_password']
 
                 if 'photo_profile' in request.files:
-                    photo_profile =  request.files['photo_profile'].stream
-
-                user = update_user(session["user"]["nick"], photo_profile,
+                    photo_profile = request.files.get('photo_profile')
+                
+                user = update_user(session["user"]["nick"], photo_profile.read(), photo_profile.filename,
                     User(
                         request.form['new_name'],
                         request.form['new_nick'],
@@ -94,4 +94,4 @@ def settings():
             except Exception as e:
                 error = str(e)
     photos = get_last_photos(session['user']['nick'])
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=error)
+    return render_template('home.html', photos=photos, bucket=Config.CLOUD_STORAGE_BUCKET, error=error)
