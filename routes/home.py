@@ -5,7 +5,7 @@ from flask import Blueprint, redirect, url_for, render_template, request, sessio
 
 from config import Config
 from routes import messages
-from services.photo import get_last_photos, save_photo, like_photo, dislike_photo, get_photo_by_user
+from services.photo import get_last_photos, save_photo, like_photo, dislike_photo, get_photo_by_user, process_likes
 from services.user import get_users, find_by_nick
 
 home_api = Blueprint('home_api', __name__)
@@ -13,7 +13,8 @@ home_api = Blueprint('home_api', __name__)
 
 @home_api.route("/")
 def home():
-    photos = get_last_photos(session['user']['nick'])
+    photos = get_last_photos()
+    process_likes(session['user']['nick'], photos)
     users = get_users()
     return render_template('home.html', photos=photos, bucket=Config.CLOUD_STORAGE_BUCKET, error=None, users=users)
 
@@ -22,8 +23,9 @@ def home():
 def find_user(nick):
     u = find_by_nick(nick)
     photos = get_photo_by_user(u.nick)
-    users = get_users()
-    return render_template('home.html', photos=photos, bucket=Config.CLOUD_STORAGE_BUCKET, error=None, visited_user=u)
+    process_likes(session['user']['nick'], photos)
+    return render_template('home.html', photos=photos, bucket=Config.CLOUD_STORAGE_BUCKET, error=None, visited_user=u,
+                           users=get_users())
 
 
 @home_api.route("/filter", methods=['POST'])
@@ -32,7 +34,8 @@ def date_filter():
     end = datetime.fromtimestamp(mktime(strptime(request.form['end'], "%d/%m/%Y")))
 
     if start < end:
-        photos = get_last_photos(session['user']['nick'], start, end)
+        photos = get_last_photos(start, end)
+        process_likes(session['user']['nick'], photos)
         users = get_users()
         return render_template('home.html', photos=photos, bucket=Config.CLOUD_STORAGE_BUCKET, error=None, users=users)
     else:

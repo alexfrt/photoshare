@@ -84,14 +84,14 @@
             {% for photo in photos %}
             <div class="card" style="width: 18rem;">
                 <div class="card-header">
-                    <!-- <span class="badge badge-dark">{{ photo['num_likes'] }} likes</span>
+                    <span class="badge badge-dark">{{ photo['num_likes'] }} likes</span>
                     <div class="float-right">
                         {% if not photo['did_like'] %}
                         <a href="like/{{ photo['uuid'] }}" class="badge badge-pill badge-success">Like</a>
                         {% else %}
                         <a href="dislike/{{ photo['uuid'] }}" class="badge badge-pill badge-danger">Dislike</a>
                         {% endif %}
-                    </div> -->
+                    </div>
                 </div>
                 <img class="card-img-top" src="https://storage.googleapis.com/{{ bucket }}/{{ photo['filename']}}"
                     alt="{{ photo['description'] }}">
@@ -213,10 +213,14 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="userSearch">User</label>
-                        <input id="userSearch" type="text" class="form-control" name="user_nick" placeholder="User"
-                            required="required">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">@</div>
+                            </div>
+                            <input id="userSearch" type="text" class="form-control" name="user_nick" placeholder="User"
+                                   required="required">
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Search user</button>
                     <hr />
                     <table>
                         <tbody id="userTables">
@@ -225,7 +229,7 @@
                                 <td>
                                     <img alt="" src="https://storage.googleapis.com/{{ bucket }}/{{ u.photo_profile }}"
                                     style="width: 32px; height: 32px;" class="rounded-circle">
-                                    <a href="user/{{ u.nick }}"><small><span>{{ u.name }} ({{ u.nick }})</span></small></a>
+                                    <a href="{{ url_for("home_api.find_user", nick=u.nick) }}"><small><span>{{ u.name }} ({{ u.nick }})</span></small></a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -251,14 +255,14 @@
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
         crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
-    
+
     <script type="text/javascript">
         $(document).ready(function () {
             $("#userTables").hide();

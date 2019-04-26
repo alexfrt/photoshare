@@ -9,29 +9,26 @@ from werkzeug import secure_filename
 from config import Config
 
 
-def get_last_photos(user, start=None, end=None):
+def get_last_photos(start=None, end=None):
     photos = _query()
     if start is not None and end is not None:
         photos = [photo for photo in photos if start <= parse(photo['when']) <= end]
-    # for photo in photos:
-    #     if 'likes' in photo:
-    #         photo['num_likes'] = len(photo['likes'])
-    #         photo['did_like'] = user in photo['likes']
-    #     else:
-    #         photo['num_likes'] = 0
 
     return photos
 
+
 def get_photo_by_user(user):
     return _query(user)
-    # for photo in photos_filtered:
-    #     if 'likes' in photo:
-    #         photo['num_likes'] = len(photo['likes'])
-    #         photo['did_like'] = user in photo['likes']
-    #     else:
-    #         photo['num_likes'] = 0
 
-    # return photos_filtered
+
+def process_likes(user, photos):
+    for photo in photos:
+        if 'likes' in photo:
+            photo['num_likes'] = len(photo['likes'])
+            photo['did_like'] = user in photo['likes']
+        else:
+            photo['num_likes'] = 0
+
 
 def save_photo(user, photo, filename, description):
     filename_formated = _save(photo, filename)
@@ -39,10 +36,11 @@ def save_photo(user, photo, filename, description):
     ds_client = datastore.Client(Config.PROJECT_ID)
 
     entity = datastore.Entity(
-        key = ds_client.key('Photo'),
-        exclude_from_indexes = ['description', 'likes'])
+        key=ds_client.key('Photo'),
+        exclude_from_indexes=['description', 'likes'])
 
     data = {
+        'uuid': uuid4().hex,
         'filename': filename_formated,
         'user': user,
         'description': description,
@@ -53,50 +51,50 @@ def save_photo(user, photo, filename, description):
     entity.update(data)
     ds_client.put(entity)
 
+
 def save_photo_profile(photo, filename):
     return _save(photo, filename)
 
+
 def like_photo(photo_uuid, user):
-    # dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    # table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    ds_client = datastore.Client(Config.PROJECT_ID)
 
-    # photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
-    # if len(photo) == 0:
-    #     return
+    query = ds_client.query(kind='Photo')
+    query.add_filter('uuid', '=', photo_uuid)
 
-    # photo = photo[0]
+    query_iterator = query.fetch()
+    page = next(query_iterator.pages)
 
-    # if user not in photo['likes']:
-    #     table.update_item(
-    #         Key={
-    #             'uuid': photo_uuid
-    #         },
-    #         UpdateExpression="SET likes = list_append(likes, :user)",
-    #         ExpressionAttributeValues={":user": [user]},
-    #     )
-    return "" # Remove it
+    entities = list(map(from_datastore, page))
+    if len(entities) == 0:
+        return
+
+    photo = entities[0]
+    if user not in photo['likes']:
+        photo['likes'].append(user)
+
+    ds_client.put(photo)
 
 
 def dislike_photo(photo_uuid, user):
-    # dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    # table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    ds_client = datastore.Client(Config.PROJECT_ID)
 
-    # photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
-    # if len(photo) == 0:
-    #     return
+    query = ds_client.query(kind='Photo')
+    query.add_filter('uuid', '=', photo_uuid)
 
-    # photo = photo[0]
+    query_iterator = query.fetch()
+    page = next(query_iterator.pages)
 
-    # if user in photo['likes']:
-    #     # obviously not atomic...
-    #     table.update_item(
-    #         Key={
-    #             'uuid': photo_uuid
-    #         },
-    #         UpdateExpression="REMOVE likes[%d]" % photo['likes'].index(user)
-    #     )
-    
-    return "" # Remove it
+    entities = list(map(from_datastore, page))
+    if len(entities) == 0:
+        return
+
+    photo = entities[0]
+    if user in photo['likes']:
+        photo['likes'].remove(user)
+
+    ds_client.put(photo)
+
 
 def from_datastore(entity):
     if not entity:
@@ -108,11 +106,13 @@ def from_datastore(entity):
 
     return entity
 
+
 def _safe_filename(filename):
     filename = secure_filename(filename)
-    date =  datetime.now().isoformat()
+    date = datetime.now().isoformat()
     basename, extension = filename.rsplit('.', 1)
     return "{0}-{1}.{2}".format(basename, date, extension)
+
 
 def _save(photo, filename):
     storage_client = storage.Client(project=Config.PROJECT_ID)
@@ -126,6 +126,7 @@ def _save(photo, filename):
 
     return filename_formated
 
+
 def _query(user=None):
     ds_client = datastore.Client(Config.PROJECT_ID)
 
@@ -134,11 +135,9 @@ def _query(user=None):
     if user:
         query.add_filter('user', '=', user)
 
-    query.order = ['-when']
-
     query_iterator = query.fetch()
     page = next(query_iterator.pages)
 
     entities = list(map(from_datastore, page))
 
-    return entities
+    return sorted(entities, key=lambda x: x['when'], reverse=True)
