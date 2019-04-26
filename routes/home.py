@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import strptime, mktime
 
 from flask import Blueprint, redirect, url_for, render_template, request, session, flash
@@ -31,7 +31,8 @@ def find_user(nick):
 @home_api.route("/filter", methods=['POST'])
 def date_filter():
     start = datetime.fromtimestamp(mktime(strptime(request.form['start'], "%d/%m/%Y")))
-    end = datetime.fromtimestamp(mktime(strptime(request.form['end'], "%d/%m/%Y")))
+    end = datetime.fromtimestamp(mktime(strptime(request.form['end'], "%d/%m/%Y"))) + timedelta(hours=23, minutes=59,
+                                                                                                seconds=59)
 
     if start < end:
         photos = get_last_photos(start, end)
