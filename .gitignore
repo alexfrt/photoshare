@@ -108,3 +108,5 @@ migrations
 .aws
 cloudsql
 cloud_sql_proxy
+
+service_accout_key.json
