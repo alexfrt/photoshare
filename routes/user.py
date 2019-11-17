@@ -61,6 +61,7 @@ def join():
 
     return render_template('join.html', error=error)
 
+
 @user_api.route('/settings', methods=['POST'])
 def settings():
     error = None

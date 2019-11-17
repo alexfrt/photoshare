@@ -46,6 +46,7 @@ def salt_user_password(user, password=None):
 def get_users():
     return User.query.all()
 
+
 def find_by_nick(nick):
     return User.query.filter(User.nick == nick).first()
 
