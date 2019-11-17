@@ -43,9 +43,6 @@ services:
       - migrate
     environment:
       DATABASE_HOST: db
-      MINIO_HOST: minio
-      MINIO_ACCESS_KEY: AKIAIOSFODNN7
-      MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/AKIAIOSFODNN7
     ports:
       - 5000:5000
     networks:
