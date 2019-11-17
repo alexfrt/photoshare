@@ -40,7 +40,10 @@ def date_filter():
 
 @home_api.route("/photo/<photo_uuid>", methods=['GET'])
 def photo(photo_uuid):
-    return fetch_photo_data(photo_uuid), 200, []
+    data = fetch_photo_data(photo_uuid)
+    if data is None:
+        data = ""
+    return data, 200, []
 
 
 @home_api.route("/like/<photo_uuid>", methods=['GET'])
