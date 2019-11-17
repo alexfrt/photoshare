@@ -1,12 +1,14 @@
+import json_logging
 from flask import Flask, session, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 
 from config import Config
-from log import config_logger
-
-config_logger()
 
 app = Flask(__name__)
+
+json_logging.ENABLE_JSON_LOGGING = True
+json_logging.init_flask()
+json_logging.init_request_instrument(app)
 
 app.secret_key = Config.SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = Config.DATABASE_URI
@@ -28,3 +30,8 @@ app.json_encoder = CustomJSONEncoder
 def session_filter():
     if 'logged_in' not in session and request.endpoint not in ['user_api.login', 'user_api.join']:
         return redirect(url_for('user_api.login'))
+
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    return str(error), 500
