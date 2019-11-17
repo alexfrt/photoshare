@@ -2,12 +2,11 @@ import logging
 
 from flask import Blueprint, render_template, request, session, redirect, url_for
 
-from config import Config
 from helper.request import contains_required_params
 from models.user import User
 from routes import messages
-from services.user import check_user_credentials, InvalidCredentialsException, create_user, update_user
 from services.photo import get_last_photos
+from services.user import check_user_credentials, InvalidCredentialsException, create_user, update_user
 
 user_api = Blueprint('user_api', __name__)
 logger = logging.getLogger(__name__)
@@ -95,4 +94,4 @@ def settings():
             except Exception as e:
                 error = str(e)
     photos = get_last_photos(session['user']['nick'])
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=error)
+    return render_template('home.html', photos=photos, error=error)

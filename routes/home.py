@@ -3,9 +3,8 @@ from time import strptime, mktime
 
 from flask import Blueprint, redirect, url_for, render_template, request, session, flash
 
-from config import Config
 from routes import messages
-from services.photo import get_last_photos, save_photo, like_photo, dislike_photo, get_photo_by_user
+from services.photo import get_last_photos, save_photo, like_photo, dislike_photo, get_photo_by_user, fetch_photo_data
 from services.user import get_users, find_by_nick
 
 home_api = Blueprint('home_api', __name__)
@@ -15,15 +14,14 @@ home_api = Blueprint('home_api', __name__)
 def home():
     photos = get_last_photos(session['user']['nick'])
     users = get_users()
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None, users=users)
+    return render_template('home.html', photos=photos, error=None, users=users)
 
 
 @home_api.route("/user/<nick>", methods=['GET'])
 def find_user(nick):
     u = find_by_nick(nick)
     photos = get_photo_by_user(u.nick)
-    users = get_users()
-    return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None, visited_user=u)
+    return render_template('home.html', photos=photos, error=None, visited_user=u)
 
 
 @home_api.route("/filter", methods=['POST'])
@@ -34,10 +32,15 @@ def date_filter():
     if start < end:
         photos = get_last_photos(session['user']['nick'], start, end)
         users = get_users()
-        return render_template('home.html', photos=photos, bucket=Config.S3_BUCKET_NAME, error=None, users=users)
+        return render_template('home.html', photos=photos, error=None, users=users)
     else:
         flash(messages.INVALID_DATE_FILTER)
         return redirect(url_for("home_api.home"))
+
+
+@home_api.route("/photo/<photo_uuid>", methods=['GET'])
+def photo(photo_uuid):
+    return fetch_photo_data(photo_uuid), 200, []
 
 
 @home_api.route("/like/<photo_uuid>", methods=['GET'])

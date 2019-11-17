@@ -1,11 +1,52 @@
-version: '3'
+version: '3.5'
 
 networks:
-  meters:
+  photoshare:
+    name: "photoshare"
 
 services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: photoshare
+      POSTGRES_USER: photoshare
+      POSTGRES_PASSWORD: photoshare
+    ports:
+      - 5432:5432
+    networks:
+      - photoshare
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - photoshare
+    depends_on:
+      - db
+
+  migrate:
+    build: .
+    environment:
+      DATABASE_HOST: db
+    depends_on:
+      - db
+    entrypoint: '/bin/bash -c "./manage.py db init && ./manage.py db migrate && ./manage.py db upgrade"'
+    networks:
+      - photoshare
+
   web:
     build: .
-    ports: ['5000:5000']
-    volumes: ['./:/opt']
-    
+    depends_on:
+      - migrate
+    environment:
+      DATABASE_HOST: db
+      MINIO_HOST: minio
+      MINIO_ACCESS_KEY: AKIAIOSFODNN7
+      MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/AKIAIOSFODNN7
+    ports:
+      - 5000:5000
+    networks:
+      - photoshare

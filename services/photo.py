@@ -1,117 +1,70 @@
 from datetime import datetime
 from uuid import uuid4
 
-import boto3
-from boto3.dynamodb.conditions import Key
-from dateutil.parser import parse
-
-from config import Config
+from app import db
+from models.photo import Photo
+from models.user import User
 
 
 def get_last_photos(user, start=None, end=None):
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
-
-    photos = table.scan()['Items']  # obviously not efficient
     if start is not None and end is not None:
-        photos = [photo for photo in photos if start <= parse(photo['when']) <= end]
-
-    sorted(photos, key=lambda p: p['when'], reverse=True)
+        photos = list(
+            Photo.query.filter(Photo.user is not None and Photo.when.between(start, end)).order_by(Photo.when))
+    else:
+        # noinspection PyComparisonWithNone
+        photos = list(Photo.query.filter(Photo.user != None).order_by(Photo.when))
 
     for photo in photos:
-        if 'likes' in photo:
-            photo['num_likes'] = len(photo['likes'])
-            photo['did_like'] = user in photo['likes']
-        else:
-            photo['num_likes'] = 0
+        for user_liked in photo.likes:
+            if user_liked.nick == user:
+                photo.did_like = True
+                break
 
     return photos
 
 
 def get_photo_by_user(user):
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
-
-    photos_filtered = list()
-    photos = table.scan()['Items']  # obviously not efficient
+    photos = list(Photo.query.filter(Photo.user == user).order_by(Photo.when))
 
     for photo in photos:
-        if photo['user'] == user:
-            photos_filtered.append(photo)
-    
-    sorted(photos_filtered, key=lambda p: p['when'], reverse=True)
+        for like in photo.likes:
+            if like.nick == user:
+                photo.did_like = True
+                break
 
-    for photo in photos_filtered:
-        if 'likes' in photo:
-            photo['num_likes'] = len(photo['likes'])
-            photo['did_like'] = user in photo['likes']
-        else:
-            photo['num_likes'] = 0
-
-    return photos_filtered
+    return photos
 
 
-def save_photo(user, photo, description):
+def save_photo(user, stream, description):
+    photo = Photo(uuid4().hex, user, description, datetime.now(), stream.read())
+    db.session.add(photo)
+    db.session.commit()
+
+
+def save_photo_profile(stream):
     key = uuid4().hex
 
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(Config.S3_BUCKET_NAME)
-    bucket.put_object(Key=key, Body=photo, ContentType="image/jpeg")
-
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
-    table.put_item(Item={
-        'uuid': key,
-        'user': user,
-        'description': description,
-        'when': datetime.now().isoformat(),
-        'likes': list()
-    })
-
-def save_photo_profile(photo):
-    key = uuid4().hex
-
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(Config.S3_BUCKET_NAME)
-    bucket.put_object(Key=key, Body=photo, ContentType="image/jpeg")
+    photo = Photo(key, None, None, datetime.now(), stream.read())
+    db.session.add(photo)
 
     return key
 
+
 def like_photo(photo_uuid, user):
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
-
-    photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
-    if len(photo) == 0:
-        return
-
-    photo = photo[0]
-
-    if user not in photo['likes']:
-        table.update_item(
-            Key={
-                'uuid': photo_uuid
-            },
-            UpdateExpression="SET likes = list_append(likes, :user)",
-            ExpressionAttributeValues={":user": [user]},
-        )
+    photo = Photo.query.filter(Photo.uuid == photo_uuid).first()
+    user = User.query.filter(User.nick == user).first()
+    photo.likes.append(user)
+    db.session.commit()
 
 
 def dislike_photo(photo_uuid, user):
-    dynamodb = boto3.resource('dynamodb', region_name=Config.AWS_REGION_NAME)
-    table = dynamodb.Table(Config.DYNAMO_DB_TABLE)
+    photo = Photo.query.filter(Photo.uuid == photo_uuid).first()
+    user = User.query.filter(User.nick == user).first()
+    photo.likes.remove(user)
+    db.session.commit()
 
-    photo = table.query(KeyConditionExpression=Key('uuid').eq(photo_uuid))['Items']
-    if len(photo) == 0:
-        return
 
-    photo = photo[0]
-
-    if user in photo['likes']:
-        # obviously not atomic...
-        table.update_item(
-            Key={
-                'uuid': photo_uuid
-            },
-            UpdateExpression="REMOVE likes[%d]" % photo['likes'].index(user)
-        )
+def fetch_photo_data(photo_uuid):
+    photo = Photo.query.filter(Photo.uuid == photo_uuid).first()
+    if photo is not None:
+        return photo.data
